@@ -1,7 +1,8 @@
+//ตัวแปรส่วนกลาง ที่เก็บ SHEET_ID
+const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID') || 'your_spreadsheet_id_here';
+
 // ตัวแปรส่วนกลางสำหรับเก็บเดือนย่อ
 const monthsThai = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-
-const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID') || 'your_spreadsheet_id_here';
 
 /*
 @param {number} number - ตัวเลขที่ต้องการจัดรูปแบบ
