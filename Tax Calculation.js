@@ -1,4 +1,4 @@
-// taxCalculation.gs
+// Tax Calculation.gs
 
 // การกำหนดค่า
 const CONFIG = {
@@ -7,7 +7,7 @@ const CONFIG = {
   COLUMNS: {
     DATE: 0,
     TYPE: 1,
-    AMOUNT: 3
+    AMOUNT: 2
   },
   MIN_YEAR: 2000,
   DEFAULT_YEAR: new Date().getFullYear()

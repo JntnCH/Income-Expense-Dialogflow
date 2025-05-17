@@ -24,7 +24,7 @@ function formatNumberWithIntl(number, locale, options)
       } 
    }
 
-/**
+/*
 ฟังก์ชันสำหรับบันทึกยอดคงเหลือรายเดือน
 @param {Sheet} sheet - ชีตที่ใช้บันทึกข้อมูล
 @param {Sheet} dailyReportSheet - ชีตรายงานประจำวัน 
@@ -49,7 +49,7 @@ sheet.appendRow([
    ]); 
 }
 
-/**
+/*
 ฟังก์ชันหลักที่ใช้รับข้อมูลจาก Dialogflow และบันทึกลง Google Sheets
 @param {object} e - ข้อมูลที่ได้รับจาก Dialogflow
 @returns {TextOutput} คำตอบที่ส่งกลับไปยัง Dialogflow 
