@@ -1,4 +1,4 @@
-//ตัวแปรส่วนกลาง ที่เก็บ SHEET_ID
+//ตัวแปรส่วนกลางสำหรับเก็บ SHEET_ID
 const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID') || 'your_spreadsheet_id_here';
 
 // ตัวแปรส่วนกลางสำหรับเก็บเดือนย่อ
