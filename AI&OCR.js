@@ -95,22 +95,34 @@ function getConfigFromSheet(sheet) {
     const config = {
         ocrConfig: {
             language: "th",
-            engine: "vision"
+            engine: "vision"  // ค่าเริ่มต้น
         },
         aiConfig: {
-            model: "gpt-4",
+            model: "gpt-4",  // ค่าเริ่มต้น
             prompt: "วิเคราะห์ข้อมูลการเงินจากข้อความนี้:\n\n{text}"
         }
     };
 
     try {
-        const data = sheet.getDataRange().getValues();
-        for (let i = 1; i < data.length; i++) {
+        const data = sheet.getDataRange().getValues(); // อ่านข้อมูลจากชีต
+        for (let i = 1; i < data.length; i++) {        // ข้ามหัวตาราง เริ่มจากแถวที่ 2 
             const row = data[i];
-            if (row[0] === "ocr") {
-                config.ocrConfig = JSON.parse(row[1]);
-            } else if (row[0] === "ai") {
-                config.aiConfig = JSON.parse(row[1]);
+            if (row[0] === "ocr" && row[1]) {
+                try {
+                    // แปลง JSON string เป็น object และรวมกับค่าเริ่มต้น
+                    const ocrSettings = JSON.parse(row[1]);
+                    config.ocrConfig = {...config.ocrConfig, ...ocrSettings};
+                } catch (error) {
+                    Logger.log("Error parsing OCR config JSON: " + error);
+                }
+            } else if (row[0] === "ai" && row[1]) {
+                try {
+                    // แปลง JSON string เป็น object และรวมกับค่าเริ่มต้น
+                    const aiSettings = JSON.parse(row[1]);
+                    config.aiConfig = {...config.aiConfig, ...aiSettings};
+                } catch (error) {
+                    Logger.log("Error parsing AI config JSON: " + error);
+                }
             }
         }
     } catch (e) {
@@ -121,31 +133,59 @@ function getConfigFromSheet(sheet) {
     return config;
 }
 
-// ฟังก์ชันอัพเดทการตั้งค่าใน Sheet
-function updateConfig(sheet, configType, configData) {
-    try {
-        const data = sheet.getDataRange().getValues();
-        let rowIndex = -1;
+// ฟังก์ชันสำหรับเรียกใช้ AI ตามโมเดลที่กำหนด
+function callAI(prompt, config) {
+    // ตรวจสอบโมเดลที่ตั้งค่าไว้
+    const model = config.aiConfig.model || "gpt-4"; // ค่าเริ่มต้นถ้าไม่ได้ระบุ
+    const apiKey = getApiKey(model);
+    
+    // เรียกใช้ฟังก์ชันตามโมเดลที่เลือก
+    if (model.includes("gpt")) {
+        return callOpenAI(model, prompt, apiKey);
+    } else if (model.includes("claude")) {
+        return callAnthropic(model, prompt, apiKey);
+    } else if (model.includes("gemini")) {
+        return callGemini(model, prompt, apiKey);
+    } else if (model.includes("mistral")) {
+        return callMistral(model, prompt, apiKey);
+    } else {
+        return "❌ ไม่รองรับโมเดล AI ที่ระบุ";
+    }
+}
 
-        // หาแถวของการตั้งค่าประเภทนั้น
-        for (let i = 1; i < data.length; i++) {
-            if (data[i][0] === configType) {
-                rowIndex = i + 1; // +1 เพราะ getValues() เริ่มที่ 0 แต่ sheet เริ่มที่ 1
-                break;
-            }
-        }
+// ฟังก์ชันสำหรับดึง API key ตามโมเดล
+function getApiKey(model) {
+    const scriptProperties = PropertiesService.getScriptProperties();
+    
+    if (model.includes("gpt")) {
+        return scriptProperties.getProperty("OPENAI_API_KEY");
+    } else if (model.includes("claude")) {
+        return scriptProperties.getProperty("ANTHROPIC_API_KEY");
+    } else if (model.includes("gemini")) {
+        return scriptProperties.getProperty("GEMINI_API_KEY");
+    } else if (model.includes("mistral")) {
+        return scriptProperties.getProperty("MISTRAL_API_KEY");
+    }
+    
+    return null;
+}
 
-        // ถ้าไม่พบให้เพิ่มใหม่
-        if (rowIndex === -1) {
-            sheet.appendRow([configType, JSON.stringify(configData)]);
-        } else {
-            sheet.getRange(rowIndex, 2).setValue(JSON.stringify(configData));
-        }
-
-        return true;
-    } catch (e) {
-        Logger.log("Error updating config: " + e);
-        return false;
+// ฟังก์ชันสำหรับทำ OCR ตาม engine ที่กำหนด
+function performOCR(fileUrl, config) {
+    const engine = config.ocrConfig.engine || "vision"; // ค่าเริ่มต้นถ้าไม่ได้ระบุ
+    const language = config.ocrConfig.language || "th"; // ค่าเริ่มต้นถ้าไม่ได้ระบุ
+    
+    // เรียกใช้ OCR ตาม engine ที่เลือก
+    if (engine === "vision") {
+        return googleVisionOCR(fileUrl, language);
+    } else if (engine === "gemini") {
+        return geminiOCR(fileUrl);
+    } else if (engine === "gpt4") {
+        return gpt4VisionOCR(fileUrl);
+    } else if (engine === "claude") {
+        return claudeOCR(fileUrl);
+    } else {
+        return "❌ ไม่รองรับ OCR engine ที่ระบุ";
     }
 }
 
