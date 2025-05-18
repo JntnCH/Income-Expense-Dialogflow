@@ -4,16 +4,6 @@ const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID')
 // ตัวแปรส่วนกลางสำหรับเก็บเดือนย่อ
 const monthsThai = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
-/*
-@param {number} number - ตัวเลขที่ต้องการจัดรูปแบบ
-
-@param {string} locale - ภาษาที่ต้องการใช้
-
-@param {object} options - ตัวเลือกเพิ่มเติม
-
-@returns {string} ตัวเลขที่ถูกจัดรูปแบบ 
-*/
-
 function formatNumberWithIntl(number, locale, options) 
 { 
    try { 
@@ -29,7 +19,6 @@ function formatNumberWithIntl(number, locale, options)
 @param {Sheet} sheet - ชีตที่ใช้บันทึกข้อมูล
 @param {Sheet} dailyReportSheet - ชีตรายงานประจำวัน 
 */
-
 function recordMonthlyBalance(sheet, dailyReportSheet) { 
    const today = new Date(); 
    const balance = dailyReportSheet.getRange("C10").getValue();
