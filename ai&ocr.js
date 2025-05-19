@@ -1,19 +1,14 @@
-/**
- * บอทวิเคราะห์เอกสารอัตโนมัติ
- * รองรับการวิเคราะห์ไฟล์ PDF และรูปภาพด้วย OCR และ AI
- * สนับสนุนบริการ AI และ OCR หลากหลาย: OpenAI, Anthropic, Google, Mistral
- */
 
-// ค่าคงที่
-const SHEET_ID = "YOUR_SHEET_ID"; // แทนที่ด้วย ID ของ Google Sheet ของคุณ
-
-/**
- * ฟังก์ชันหลักสำหรับรับคำขอ POST จาก Dialogflow
- */
+// ฟังก์ชันหลักสำหรับรับคำขอ POST จาก Dialogflow
 function doPost(e) {
     const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Bot Transactions");
     const configSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Config");
-
+    
+      // ตรวจสอบว่ามีการตั้งค่าหรือไม่
+    if (!SHEET_ID) {
+        throw new Error("กรุณาตั้งค่า SHEET_ID ก่อนใช้งาน โดยรันฟังก์ชัน setSheetId()");
+    }
+  
     // อ่านการตั้งค่าจาก Config Sheet
     const config = getConfigFromSheet(configSheet);
 

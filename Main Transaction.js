@@ -12,7 +12,7 @@ function formatNumberWithIntl(number, locale, options)
          return number; 
          
       } 
-   }
+ }
 
 /*
 ฟังก์ชันสำหรับบันทึกยอดคงเหลือรายเดือน
