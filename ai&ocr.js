@@ -103,9 +103,7 @@ function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
 }
 
-/**
- * ฟังก์ชันอ่านการตั้งค่าจาก Sheet
- */
+// ฟังก์ชันอ่านการตั้งค่าจาก Sheet
 function getConfigFromSheet(sheet) {
     const config = {
         ocrConfig: {
