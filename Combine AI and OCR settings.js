@@ -1,4 +1,4 @@
-/**
+ /**
  * บอทวิเคราะห์เอกสารอัตโนมัติ
  * รองรับการวิเคราะห์ไฟล์ PDF และรูปภาพด้วย OCR และ AI
  * สนับสนุนบริการ AI และ OCR หลากหลาย: OpenAI, Anthropic, Google, Mistral
@@ -15,7 +15,7 @@
 
  // ฟังก์ชันสำหรับตั้งค่า SHEET_ID
 function setSheetId() {
-  PropertiesService.getScriptProperties().setProperty('SHEET_ID', 'YOUR_SHEET_ID');
+  PropertiesService.getScriptProperties().setProperty('SHEET_ID', '1H65lqt4xspEFysmRfZkMatnGieogzsX_LeyAlXF3UUQ');
   return "✅ ตั้งค่า SHEET_ID เรียบร้อย";
 }
 
@@ -48,7 +48,7 @@ function setupAPIKeys() {
   // แทนที่ด้วย API Keys ของคุณ
   scriptProperties.setProperty("OPENAI_API_KEY", "sk-xxxxxxxxxxxxxxxxxxxxxxxx");
   scriptProperties.setProperty("ANTHROPIC_API_KEY", "sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx");
-  scriptProperties.setProperty("GEMINI_API_KEY", "AIzaxxxxxxxxxxxxxxxxxxxxxxxx");
+  scriptProperties.setProperty("GEMINI_API_KEY", "AIzaSyCuDEdFYSkmvd3qIXyclfdagHUSn-HEEkU");
   scriptProperties.setProperty("MISTRAL_API_KEY", "xxxxxxxxxxxxxxxxxxxxxxxx");
   scriptProperties.setProperty("VISION_API_KEY", "AIzaxxxxxxxxxxxxxxxxxxxxxxxx");
   
@@ -274,7 +274,7 @@ function pricingInfo() {
   };
 }
 
-// ============= ฟังก์ชันหลัก =============
+// ============= ฟังก์ชั่นหลัก =============
 
 /**
  * ฟังก์ชันหลักสำหรับรับคำขอ POST จาก Dialogflow
