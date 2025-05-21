@@ -11,37 +11,12 @@
   5. เผยแพร่เป็น Web App และเชื่อมต่อกับ Dialogflow
  */
 
-// ============= การตั้งค่า SHEET_ID =============
-
- // ฟังก์ชันสำหรับตั้งค่า SHEET_ID
-function setSheetId() {
-  PropertiesService.getScriptProperties().setProperty('SHEET_ID', '1H65lqt4xspEFysmRfZkMatnGieogzsX_LeyAlXF3UUQ');
-  return "✅ ตั้งค่า SHEET_ID เรียบร้อย";
-}
-
- // ฟังก์ชันสำหรับดึงค่า SHEET_ID
-function getSheetId() {
-  const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
-  if (!sheetId) {
-    return "❌ ยังไม่ได้ตั้งค่า SHEET_ID กรุณารันฟังก์ชัน setSheetId() ก่อน";
-  }
-  return "SHEET_ID ปัจจุบัน: " + sheetId;
-}
-
-/**
- * ฟังก์ชันสำหรับลบการตั้งค่า SHEET_ID
- */
-function clearSheetId() {
-  PropertiesService.getScriptProperties().deleteProperty('SHEET_ID');
-  return "✅ ลบการตั้งค่า SHEET_ID เรียบร้อย";
-}
 
 // ============= การตั้งค่า API Keys =============
 
-/**
-  ฟังก์ชันสำหรับตั้งค่า API Keys ทั้งหมด
-  รันฟังก์ชันนี้หนึ่งครั้งเพื่อตั้งค่า
- */
+
+//  ฟังก์ชันสำหรับตั้งค่า API Keys ทั้งหมด
+//  รันฟังก์ชันนี้หนึ่งครั้งเพื่อตั้งค่า
 function setupAPIKeys() {
   const scriptProperties = PropertiesService.getScriptProperties();
   
