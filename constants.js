@@ -1,4 +1,4 @@
-// ใส่ SHEET_ID ฟังก์ชั่นนี้
+// ใส่ SHEET_ID ของคุณ ทึ่ฟังก์ชั่นนี้
 function setSheetId() {
   PropertiesService.getScriptProperties.setProperty('SHEET_ID', 'YOUR_SHEET_ID_HERE');
   return "✅ ตั้งค่า SHEET เรียบร้อยแล้ว";
