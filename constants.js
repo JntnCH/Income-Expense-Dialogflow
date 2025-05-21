@@ -11,7 +11,6 @@ function getSheetId() {
   }
   return sheetId;
 }
-
 // ฟังก์ชันสำหรับลบการตั้งค่า SHEET_ID
 function clearSheetId() {
   PropertiesService.getScriptProperties().deleteProperty('SHEET_ID');
