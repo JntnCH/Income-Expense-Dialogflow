@@ -220,7 +220,7 @@ function calculateTax(e) {
     return response;
 
   } catch (error) {
-    const spreadsheet = SpreadsheetApp.openById(CONFIG.SHEETS_TRANSACTIONS);
+    const spreadsheet = SpreadsheetApp.openById(CONFIG.SHEET_ID);
     logAction(spreadsheet, e.userId, 'calculateTax_error', error.message);
     return {
       fulfillmentText: getMessage('th', 'ERROR', error.message)
