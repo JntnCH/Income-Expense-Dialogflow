@@ -1,4 +1,13 @@
+
 // Insert ID sheet into this function
+
+/*
+   ฟังก์ชันสำหรับการตั้งค่า SHEET_ID ใน Script Properties
+   วิธีใช้: แก้ไข ID ในฟังก์ชัน setSheetId() แล้วรันฟังก์ชันนี้หนึ่งครั้ง
+ */
+
+// ฟังก์ชันสำหรับตั้งค่า SHEET_ID
+
 function setSheetId() {
   PropertiesService.getScriptProperties().setProperty('SHEET_ID', 'YOUR_SHEET_ID_HERE');
   return "✅ ตั้งค่า SHEET_ID เรียบร้อย";
