@@ -49,8 +49,8 @@ function checkAPIKeys() {
 // ============= การตั้งค่า Config Sheet =============
 
 /**
- * ฟังก์ชันสำหรับสร้าง Config Sheet
- * รันฟังก์ชันนี้หนึ่งครั้งเพื่อสร้าง Sheet สำหรับการตั้งค่า
+  ฟังก์ชันสำหรับสร้าง Config Sheet
+  รันฟังก์ชันนี้หนึ่งครั้งเพื่อสร้าง Sheet สำหรับการตั้งค่า
  */
 function setupConfigSheet() {
   const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
