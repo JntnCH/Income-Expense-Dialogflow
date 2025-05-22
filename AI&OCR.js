@@ -59,7 +59,7 @@ function setupConfigSheet() {
   }
   
   try {
-    const ss = SpreadsheetApp.openById(CONFIG.SHEETS_TRANSACTIONS);
+    const ss = SpreadsheetApp.openById(SHEET_ID);
     
     // สร้าง Sheet สำหรับบันทึกการทำรายการ
     let transactionSheet = ss.getSheetByName("Bot Transactions");
