@@ -8,7 +8,7 @@ function setSheetId() {
 function getSheetId() {
   const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
   if (!sheetId) {
-    throw new Error('กรุณาตั้งค่า SHEET_ID ก่อนใช้งาน โดยรันฟังก์ชั่น setSheetId()');
+    throw new Error('SHEET_ID is not set. Please run the setSheetId() function to configure it.');
   }
   return sheetId;
 }
