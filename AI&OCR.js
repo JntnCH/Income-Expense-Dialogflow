@@ -30,9 +30,7 @@ function setupAPIKeys() {
   return "✅ ตั้งค่า API Keys เรียบร้อย";
 }
 
-/**
- * ฟังก์ชันสำหรับตรวจสอบ API Keys ที่ตั้งค่าไว้
- */
+ // ฟังก์ชันสำหรับตรวจสอบ API Keys ที่ตั้งค่าไว้
 function checkAPIKeys() {
   const scriptProperties = PropertiesService.getScriptProperties();
   const keys = {
@@ -45,13 +43,7 @@ function checkAPIKeys() {
   
   return keys;
 }
-
-// ============= การตั้งค่า Config Sheet =============
-
-/**
-  ฟังก์ชันสำหรับสร้าง Config Sheet
-  รันฟังก์ชันนี้หนึ่งครั้งเพื่อสร้าง Sheet สำหรับการตั้งค่า
- */
+//  ฟังก์ชันสำหรับสร้าง Config Sheet
 function setupConfigSheet() {
   const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
   if (!SHEET_ID) {
