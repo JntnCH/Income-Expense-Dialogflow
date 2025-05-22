@@ -1,14 +1,263 @@
+ /**
+ * บอทวิเคราะห์เอกสารอัตโนมัติ
+ * รองรับการวิเคราะห์ไฟล์ PDF และรูปภาพด้วย OCR และ AI
+ * สนับสนุนบริการ AI และ OCR หลากหลาย: OpenAI, Anthropic, Google, Mistral
+  
+  ขั้นตอนการใช้งาน:
+  1. ตั้งค่า SHEET_ID ด้วยฟังก์ชัน setSheetId()
+  2. ตั้งค่า API Keys ด้วยฟังก์ชัน setupAPIKeys()
+  3. สร้าง Config Sheet ด้วยฟังก์ชัน setupConfigSheet()
+  4. ตั้งค่า OCR และ AI ตามต้องการด้วยฟังก์ชัน setOCRConfig() และ setAIConfig()
+  5. เผยแพร่เป็น Web App และเชื่อมต่อกับ Dialogflow
+ */
 
-// ฟังก์ชันหลักสำหรับรับคำขอ POST จาก Dialogflow
+
+// ============= การตั้งค่า API Keys =============
+
+
+//  ฟังก์ชันสำหรับตั้งค่า API Keys ทั้งหมด
+//  รันฟังก์ชันนี้หนึ่งครั้งเพื่อตั้งค่า
+function setupAPIKeys() {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  
+  // แทนที่ด้วย API Keys ของคุณ
+  scriptProperties.setProperty("OPENAI_API_KEY", "sk-xxxxxxxxxxxxxxxxxxxxxxxx");
+  scriptProperties.setProperty("ANTHROPIC_API_KEY", "sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx");
+  scriptProperties.setProperty("GEMINI_API_KEY", "AIzaSyCuDEdFYSkmvd3qIXyclfdagHUSn-HEEkU");
+  scriptProperties.setProperty("MISTRAL_API_KEY", "xxxxxxxxxxxxxxxxxxxxxxxx");
+  scriptProperties.setProperty("VISION_API_KEY", "AIzaxxxxxxxxxxxxxxxxxxxxxxxx");
+  
+  return "✅ ตั้งค่า API Keys เรียบร้อย";
+}
+
+ // ฟังก์ชันสำหรับตรวจสอบ API Keys ที่ตั้งค่าไว้
+function checkAPIKeys() {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  const keys = {
+    "OPENAI_API_KEY": scriptProperties.getProperty("OPENAI_API_KEY") ? "✅ ตั้งค่าแล้ว" : "❌ ยังไม่ได้ตั้งค่า",
+    "ANTHROPIC_API_KEY": scriptProperties.getProperty("ANTHROPIC_API_KEY") ? "✅ ตั้งค่าแล้ว" : "❌ ยังไม่ได้ตั้งค่า",
+    "GEMINI_API_KEY": scriptProperties.getProperty("GEMINI_API_KEY") ? "✅ ตั้งค่าแล้ว" : "❌ ยังไม่ได้ตั้งค่า",
+    "MISTRAL_API_KEY": scriptProperties.getProperty("MISTRAL_API_KEY") ? "✅ ตั้งค่าแล้ว" : "❌ ยังไม่ได้ตั้งค่า",
+    "VISION_API_KEY": scriptProperties.getProperty("VISION_API_KEY") ? "✅ ตั้งค่าแล้ว" : "❌ ยังไม่ได้ตั้งค่า"
+  };
+  
+  return keys;
+}
+//  ฟังก์ชันสำหรับสร้าง Config Sheet
+function setupConfigSheet() {
+  const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+  if (!SHEET_ID) {
+    return "❌ กรุณาตั้งค่า SHEET_ID ก่อน โดยรันฟังก์ชัน setSheetId()";
+  }
+  
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    
+    // สร้าง Sheet สำหรับบันทึกการทำรายการ
+    let transactionSheet = ss.getSheetByName("Bot Transactions");
+    if (!transactionSheet) {
+      transactionSheet = ss.insertSheet("Bot Transactions");
+      transactionSheet.appendRow(["Timestamp", "Action", "File URL", "Source"]);
+    }
+    
+    // สร้าง Sheet สำหรับการตั้งค่า
+    let configSheet = ss.getSheetByName("Config");
+    if (!configSheet) {
+      configSheet = ss.insertSheet("Config");
+      configSheet.appendRow(["type", "config"]);
+      
+      // เพิ่มค่าเริ่มต้น
+      configSheet.appendRow(["ocr", JSON.stringify({
+        language: "th",
+        engine: "vision"
+      })]);
+      
+      configSheet.appendRow(["ai", JSON.stringify({
+        model: "gpt-4",
+        prompt: "วิเคราะห์ข้อมูลการเงินจากข้อความนี้:\n\n{text}"
+      })]);
+    }
+    
+    return "✅ สร้าง Config Sheet เรียบร้อย";
+  } catch (error) {
+    return "❌ เกิดข้อผิดพลาดในการสร้าง Config Sheet: " + error;
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับตั้งค่า OCR
+ * @param {string} language - ภาษาที่ต้องการ OCR เช่น "th", "en"
+ * @param {string} engine - engine ที่ต้องการใช้ เช่น "vision", "gemini", "gpt4", "claude"
+ */
+function setOCRConfig(language, engine) {
+  const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+  if (!SHEET_ID) {
+    return "❌ กรุณาตั้งค่า SHEET_ID ก่อน โดยรันฟังก์ชัน setSheetId()";
+  }
+  
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const configSheet = ss.getSheetByName("Config");
+    
+    if (!configSheet) {
+      return "❌ ไม่พบ Config Sheet กรุณารันฟังก์ชัน setupConfigSheet() ก่อน";
+    }
+    
+    const ocrConfig = {
+      language: language || "th",
+      engine: engine || "vision"
+    };
+    
+    // อัปเดตการตั้งค่า OCR
+    updateConfig(configSheet, "ocr", ocrConfig);
+    
+    return `✅ ตั้งค่า OCR เรียบร้อย: ภาษา=${language}, Engine=${engine}`;
+  } catch (error) {
+    return "❌ เกิดข้อผิดพลาดในการตั้งค่า OCR: " + error;
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับตั้งค่า AI
+ * @param {string} model - โมเดล AI ที่ต้องการใช้
+ * @param {string} prompt - prompt ที่ต้องการใช้
+ */
+function setAIConfig(model, prompt) {
+  const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+  if (!SHEET_ID) {
+    return "❌ กรุณาตั้งค่า SHEET_ID ก่อน โดยรันฟังก์ชัน setSheetId()";
+  }
+  
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const configSheet = ss.getSheetByName("Config");
+    
+    if (!configSheet) {
+      return "❌ ไม่พบ Config Sheet กรุณารันฟังก์ชัน setupConfigSheet() ก่อน";
+    }
+    
+    const aiConfig = {
+      model: model || "gpt-4",
+      prompt: prompt || "วิเคราะห์ข้อมูลการเงินจากข้อความนี้:\n\n{text}"
+    };
+    
+    // อัปเดตการตั้งค่า AI
+    updateConfig(configSheet, "ai", aiConfig);
+    
+    return `✅ ตั้งค่า AI เรียบร้อย: Model=${model}`;
+  } catch (error) {
+    return "❌ เกิดข้อผิดพลาดในการตั้งค่า AI: " + error;
+  }
+}
+
+/**
+ * ฟังก์ชันสำหรับดูการตั้งค่าปัจจุบัน
+ */
+function viewCurrentConfig() {
+  const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+  if (!SHEET_ID) {
+    return "❌ กรุณาตั้งค่า SHEET_ID ก่อน โดยรันฟังก์ชัน setSheetId()";
+  }
+  
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const configSheet = ss.getSheetByName("Config");
+    
+    if (!configSheet) {
+      return "❌ ไม่พบ Config Sheet กรุณารันฟังก์ชัน setupConfigSheet() ก่อน";
+    }
+    
+    const config = getConfigFromSheet(configSheet);
+    
+    return JSON.stringify(config, null, 2);
+  } catch (error) {
+    return "❌ เกิดข้อผิดพลาดในการดูการตั้งค่า: " + error;
+  }
+}
+
+// ============= ข้อมูลเพิ่มเติม =============
+
+/**
+ * ข้อมูล AI models ที่รองรับ
+ */
+function supportedAIModels() {
+  return {
+    "OpenAI": [
+      "gpt-4", 
+      "gpt-4o", 
+      "gpt-4o-mini"
+    ],
+    "Anthropic": [
+      "claude-3-opus-20240229", 
+      "claude-3-sonnet-20240229", 
+      "claude-3-haiku-20240307"
+    ],
+    "Google": [
+      "gemini-2.0-flash", 
+      "gemini-2.0-flash-lite", 
+      "gemini-1.5-pro"
+    ],
+    "Mistral": [
+      "mistral-large", 
+      "mistral-medium", 
+      "mistral-small"
+    ]
+  };
+}
+
+/**
+ * ข้อมูล OCR engines ที่รองรับ
+ */
+function supportedOCREngines() {
+  return {
+    "vision": "Google Vision API (ค่าเริ่มต้น)",
+    "gemini": "Gemini 1.5 Flash OCR (ราคาถูกที่สุด)",
+    "gpt4": "GPT-4o Vision OCR (แม่นยำสูง)",
+    "claude": "Claude 3 Opus OCR (แม่นยำสูงสุด)"
+  };
+}
+
+/**
+ * ข้อมูลราคาโดยประมาณ
+ */
+function pricingInfo() {
+  return {
+    "OCR": {
+      "gemini": "$0.00005 ต่อหน้า (ถูกที่สุด)",
+      "vision": "$0.0015 ต่อหน้า",
+      "gpt4": "$0.005 ต่อหน้า",
+      "claude": "$0.015 ต่อหน้า (แพงที่สุด)"
+    },
+    "AI": {
+      "gemini-2.0-flash-lite": "$0.075 ต่อ 1M tokens input (ถูกที่สุด)",
+      "gemini-2.0-flash": "$0.35 ต่อ 1M tokens input",
+      "gemini-1.5-pro": "$3.50 ต่อ 1M tokens input",
+      "gpt-4o-mini": "$0.15 ต่อ 1M tokens input",
+      "gpt-4o": "$5.00 ต่อ 1M tokens input",
+      "claude-3-haiku": "$0.25 ต่อ 1M tokens input",
+      "claude-3-sonnet": "$3.00 ต่อ 1M tokens input",
+      "claude-3-opus": "$15.00 ต่อ 1M tokens input (แพงที่สุด)"
+    }
+  };
+}
+
+// ============= ฟังก์ชั่นหลัก =============
+
+/**
+ * ฟังก์ชันหลักสำหรับรับคำขอ POST จาก Dialogflow
+ */
 function doPost(e) {
+    // ใช้ SHEET_ID จาก Script Properties แทนการฝังในโค้ด
+    const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+    if (!SHEET_ID) {
+        return ContentService.createTextOutput(JSON.stringify({
+            fulfillmentText: "❌ กรุณาตั้งค่า SHEET_ID ก่อนใช้งาน โดยรันฟังก์ชัน setSheetId()"
+        })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Bot Transactions");
     const configSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Config");
-    
-      // ตรวจสอบว่ามีการตั้งค่าหรือไม่
-    if (!SHEET_ID) {
-        throw new Error("กรุณาตั้งค่า SHEET_ID ก่อนใช้งาน โดยรันฟังก์ชัน setSheetId()");
-    }
-  
+
     // อ่านการตั้งค่าจาก Config Sheet
     const config = getConfigFromSheet(configSheet);
 
@@ -103,7 +352,9 @@ function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
 }
 
-// ฟังก์ชันอ่านการตั้งค่าจาก Sheet
+/**
+ * ฟังก์ชันอ่านการตั้งค่าจาก Sheet
+ */
 function getConfigFromSheet(sheet) {
     const config = {
         ocrConfig: {
@@ -175,6 +426,8 @@ function updateConfig(sheet, type, configObj) {
         return false;
     }
 }
+
+// ============= ฟังก์ชัน OCR =============
 
 /**
  * ฟังก์ชันดึงข้อความจาก PDF/รูปภาพโดยใช้ Google Drive API
@@ -470,6 +723,8 @@ function claudeOCR(file, ocrConfig) {
     }
 }
 
+// ============= ฟังก์ชัน AI =============
+
 /**
  * ฟังก์ชันเรียก AI วิเคราะห์ข้อมูล
  */
@@ -477,268 +732,218 @@ function callAIService(prompt, config) {
     // ใช้การตั้งค่า AI จาก config
     const aiConfig = config.aiConfig || {
         model: "gpt-4",
-        prompt: "วิเคราะห์ข้อมูลจากข้อความนี้:\n\n{text}"
+        prompt: "วิเคราะห์ข้อมูลการเงินจากข้อความนี้:\n\n{text}"
     };
     
     const model = aiConfig.model || "gpt-4";
     
-    // ดึง API key ตามโมเดลที่เลือก
-    const apiKey = getApiKey(model);
-    if (!apiKey) return '❌ ไม่พบ API Key สำหรับโมเดล ' + model;
-    
-    // เรียกใช้ฟังก์ชันตามโมเดลที่เลือก
+    // เลือก AI service ตามโมเดล
     if (model.includes("gpt")) {
-        return callOpenAI(model, prompt, apiKey);
+        return callOpenAI(model, prompt);
     } else if (model.includes("claude")) {
-        return callAnthropic(model, prompt, apiKey);
+        return callAnthropic(model, prompt);
     } else if (model.includes("gemini")) {
-        return callGemini(model, prompt, apiKey);
+        return callGemini(model, prompt);
     } else if (model.includes("mistral")) {
-        return callMistral(model, prompt, apiKey);
+        return callMistral(model, prompt);
     } else {
-        return "❌ ไม่รองรับโมเดล AI: " + model;
+        return "❌ ไม่รองรับ AI model: " + model;
     }
 }
 
 /**
- * ฟังก์ชันสำหรับดึง API key ตามโมเดล
+ * ฟังก์ชันเรียกใช้ OpenAI API
  */
-function getApiKey(model) {
-    const scriptProperties = PropertiesService.getScriptProperties();
+function callOpenAI(model, prompt) {
+    const apiKey = PropertiesService.getScriptProperties().getProperty("OPENAI_API_KEY");
+    if (!apiKey) return "❌ ไม่พบ OpenAI API Key";
     
-    if (model.includes("gpt")) {
-        return scriptProperties.getProperty("OPENAI_API_KEY");
-    } else if (model.includes("claude")) {
-        return scriptProperties.getProperty("ANTHROPIC_API_KEY");
-    } else if (model.includes("gemini")) {
-        return scriptProperties.getProperty("GEMINI_API_KEY");
-    } else if (model.includes("mistral")) {
-        return scriptProperties.getProperty("MISTRAL_API_KEY");
-    }
-    
-    return null;
-}
-
-/**
- * ฟังก์ชันเรียก OpenAI
- */
-function callOpenAI(model, prompt, apiKey) {
     const url = "https://api.openai.com/v1/chat/completions";
     
-    // ปรับ system prompt ตามโมเดล
-    let systemPrompt = "คุณเป็น AI ที่เชี่ยวชาญในการวิเคราะห์ข้อมูลการเงิน";
-    
-    // ปรับ max_tokens ตามโมเดล
-    let maxTokens = 500;
-    if (model.includes("gpt-4")) {
-        maxTokens = 1000; // เพิ่ม token สำหรับโมเดลที่มีความสามารถสูง
-    }
-
     const options = {
-        method: 'post',
-        contentType: 'application/json',
+        method: "post",
+        contentType: "application/json",
         headers: {
-            'Authorization': 'Bearer ' + apiKey,
-            'Content-Type': 'application/json'
+            "Authorization": "Bearer " + apiKey,
+            "Content-Type": "application/json"
         },
         payload: JSON.stringify({
             model: model,
             messages: [
-                { role: "system", content: systemPrompt },
+                { role: "system", content: "คุณเป็น AI ที่เชี่ยวชาญในการวิเคราะห์ข้อมูลการเงิน" },
                 { role: "user", content: prompt }
             ],
-            max_tokens: maxTokens
+            max_tokens: 1024
         })
     };
-
+    
     try {
         const response = UrlFetchApp.fetch(url, options);
         const jsonResponse = JSON.parse(response.getContentText());
-
         return jsonResponse.choices?.[0]?.message?.content || "❌ ไม่พบผลลัพธ์จาก OpenAI";
     } catch (error) {
-        return '🚨 เกิดข้อผิดพลาด OpenAI: ' + error.message;
+        Logger.log("OpenAI error: " + error);
+        return "🚨 เกิดข้อผิดพลาด OpenAI: " + error.message;
     }
 }
 
 /**
- * ฟังก์ชันเรียก Anthropic
+ * ฟังก์ชันเรียกใช้ Anthropic API
  */
-function callAnthropic(model, prompt, apiKey) {
+function callAnthropic(model, prompt) {
+    const apiKey = PropertiesService.getScriptProperties().getProperty("ANTHROPIC_API_KEY");
+    if (!apiKey) return "❌ ไม่พบ Anthropic API Key";
+    
     const url = "https://api.anthropic.com/v1/messages";
     
-    // ปรับ max_tokens ตามโมเดล
-    let maxTokens = 500;
-    if (model.includes("opus")) {
-        maxTokens = 1000; // เพิ่ม token สำหรับโมเดลที่มีความสามารถสูง
-    }
-
     const options = {
-        method: 'post',
-        contentType: 'application/json',
+        method: "post",
+        contentType: "application/json",
         headers: {
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-            'Content-Type': 'application/json'
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json"
         },
         payload: JSON.stringify({
             model: model,
+            system: "คุณเป็น AI ที่เชี่ยวชาญในการวิเคราะห์ข้อมูลการเงิน",
             messages: [
                 { role: "user", content: prompt }
             ],
-            max_tokens: maxTokens
+            max_tokens: 1024
         })
     };
-
+    
     try {
         const response = UrlFetchApp.fetch(url, options);
         const jsonResponse = JSON.parse(response.getContentText());
-
         return jsonResponse.content?.[0]?.text || "❌ ไม่พบผลลัพธ์จาก Anthropic";
     } catch (error) {
-        return '🚨 เกิดข้อผิดพลาด Anthropic: ' + error.message;
+        Logger.log("Anthropic error: " + error);
+        return "🚨 เกิดข้อผิดพลาด Anthropic: " + error.message;
     }
 }
 
 /**
- * ฟังก์ชันเรียก Gemini
+ * ฟังก์ชันเรียกใช้ Google Gemini API
  */
-function callGemini(model, prompt, apiKey) {
+function callGemini(model, prompt) {
+    const apiKey = PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
+    if (!apiKey) return "❌ ไม่พบ Gemini API Key";
+    
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     
-    // ปรับ max_tokens ตามโมเดล
-    let maxTokens = 500;
-    if (model.includes("pro")) {
-        maxTokens = 1000; // เพิ่ม token สำหรับโมเดลที่มีความสามารถสูง
-    }
-
     const options = {
-        method: 'post',
-        contentType: 'application/json',
+        method: "post",
+        contentType: "application/json",
         payload: JSON.stringify({
             contents: [
                 {
                     parts: [
+                        { text: "คุณเป็น AI ที่เชี่ยวชาญในการวิเคราะห์ข้อมูลการเงิน" }
+                    ],
+                    role: "system"
+                },
+                {
+                    parts: [
                         { text: prompt }
-                    ]
+                    ],
+                    role: "user"
                 }
             ],
             generationConfig: {
-                maxOutputTokens: maxTokens
+                maxOutputTokens: 1024
             }
         })
     };
-
+    
     try {
         const response = UrlFetchApp.fetch(url, options);
         const jsonResponse = JSON.parse(response.getContentText());
-
         return jsonResponse.candidates?.[0]?.content?.parts?.[0]?.text || "❌ ไม่พบผลลัพธ์จาก Gemini";
     } catch (error) {
-        return '🚨 เกิดข้อผิดพลาด Gemini: ' + error.message;
+        Logger.log("Gemini error: " + error);
+        return "🚨 เกิดข้อผิดพลาด Gemini: " + error.message;
     }
 }
 
 /**
- * ฟังก์ชันเรียก Mistral
+ * ฟังก์ชันเรียกใช้ Mistral API
  */
-function callMistral(model, prompt, apiKey) {
+function callMistral(model, prompt) {
+    const apiKey = PropertiesService.getScriptProperties().getProperty("MISTRAL_API_KEY");
+    if (!apiKey) return "❌ ไม่พบ Mistral API Key";
+    
     const url = "https://api.mistral.ai/v1/chat/completions";
     
-    // ปรับ max_tokens ตามโมเดล
-    let maxTokens = 500;
-    if (model.includes("large")) {
-        maxTokens = 1000; // เพิ่ม token สำหรับโมเดลที่มีความสามารถสูง
-    }
-
     const options = {
-        method: 'post',
-        contentType: 'application/json',
+        method: "post",
+        contentType: "application/json",
         headers: {
-            'Authorization': 'Bearer ' + apiKey,
-            'Content-Type': 'application/json'
+            "Authorization": "Bearer " + apiKey,
+            "Content-Type": "application/json"
         },
         payload: JSON.stringify({
             model: model,
             messages: [
+                { role: "system", content: "คุณเป็น AI ที่เชี่ยวชาญในการวิเคราะห์ข้อมูลการเงิน" },
                 { role: "user", content: prompt }
             ],
-            max_tokens: maxTokens
+            max_tokens: 1024
         })
     };
-
+    
     try {
         const response = UrlFetchApp.fetch(url, options);
         const jsonResponse = JSON.parse(response.getContentText());
-
         return jsonResponse.choices?.[0]?.message?.content || "❌ ไม่พบผลลัพธ์จาก Mistral";
     } catch (error) {
-        return '🚨 เกิดข้อผิดพลาด Mistral: ' + error.message;
+        Logger.log("Mistral error: " + error);
+        return "🚨 เกิดข้อผิดพลาด Mistral: " + error.message;
     }
 }
 
-/**
- * ฟังก์ชันสำหรับตั้งค่า API Keys
- * ใช้สำหรับตั้งค่า API Keys ครั้งแรก
- */
-function setupAPIKeys() {
-    const scriptProperties = PropertiesService.getScriptProperties();
-    
-    // ตั้งค่า API Keys (แทนที่ด้วย API Keys ของคุณ)
-    scriptProperties.setProperty("OPENAI_API_KEY", "YOUR_OPENAI_API_KEY");
-    scriptProperties.setProperty("ANTHROPIC_API_KEY", "YOUR_ANTHROPIC_API_KEY");
-    scriptProperties.setProperty("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY");
-    scriptProperties.setProperty("MISTRAL_API_KEY", "YOUR_MISTRAL_API_KEY");
-    scriptProperties.setProperty("VISION_API_KEY", "YOUR_VISION_API_KEY");
-    
-    return "✅ ตั้งค่า API Keys เรียบร้อย";
-}
+// ============= ตัวอย่างการใช้งาน =============
 
 /**
- * ฟังก์ชันสำหรับสร้าง Sheet ครั้งแรก
+ * ตัวอย่างการใช้งานทั้งหมด
+ * ฟังก์ชันนี้แสดงตัวอย่างการใช้งานทั้งระบบ
  */
-function setupSheets() {
-    try {
-        const ss = SpreadsheetApp.openById(SHEET_ID);
-        
-        // สร้าง Sheet สำหรับบันทึกการทำรายการ
-        let transactionSheet = ss.getSheetByName("Bot Transactions");
-        if (!transactionSheet) {
-            transactionSheet = ss.insertSheet("Bot Transactions");
-            transactionSheet.appendRow(["Timestamp", "Action", "File URL", "Source"]);
-        }
-        
-        // สร้าง Sheet สำหรับการตั้งค่า
-        let configSheet = ss.getSheetByName("Config");
-        if (!configSheet) {
-            configSheet = ss.insertSheet("Config");
-            configSheet.appendRow(["type", "config"]);
-            
-            // เพิ่มค่าเริ่มต้น
-            configSheet.appendRow(["ocr", JSON.stringify({
-                language: "th",
-                engine: "vision"
-            })]);
-            
-            configSheet.appendRow(["ai", JSON.stringify({
-                model: "gpt-4",
-                prompt: "วิเคราะห์ข้อมูลการเงินจากข้อความนี้:\n\n{text}"
-            })]);
-        }
-        
-        return "✅ สร้าง Sheets เรียบร้อย";
-    } catch (error) {
-        return "❌ เกิดข้อผิดพลาดในการสร้าง Sheets: " + error;
-    }
-}
-
-/**
- * ฟังก์ชันสำหรับทดสอบการทำงาน
- */
-function testBot() {
-    // ทดสอบการอ่านการตั้งค่า
-    const configSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Config");
-    const config = getConfigFromSheet(configSheet);
-    
-    return JSON.stringify(config, null, 2);
+function exampleUsage() {
+  // 1. ตรวจสอบ SHEET_ID
+  const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
+  if (!SHEET_ID) {
+    return "❌ กรุณาตั้งค่า SHEET_ID ก่อน โดยรันฟังก์ชัน setSheetId()";
+  }
+  
+  // 2. เปิด Sheet และอ่านการตั้งค่า
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const configSheet = ss.getSheetByName("Config");
+  const config = getConfigFromSheet(configSheet);
+  
+  // 3. สมมติว่ามีไฟล์ URL
+  const fileUrl = "https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz/view";
+  
+  // 4. ดึงข้อความจากไฟล์ด้วย OCR
+  // ในสถานการณ์จริง คุณจะใช้ extractTextFromFile(fileUrl, config)
+  const extractedText = "นี่คือข้อความที่สกัดได้จากไฟล์ด้วย OCR engine: " + config.ocrConfig.engine;
+  
+  // 5. สร้าง prompt สำหรับ AI
+  const prompt = config.aiConfig.prompt.replace("{text}", extractedText);
+  
+  // 6. เรียกใช้ AI วิเคราะห์ข้อความ
+  // ในสถานการณ์จริง คุณจะใช้ callAIService(prompt, config)
+  const aiResponse = "นี่คือผลการวิเคราะห์จาก AI model: " + config.aiConfig.model;
+  
+  // 7. บันทึกข้อมูลการทำรายการ
+  const transactionSheet = ss.getSheetByName("Bot Transactions");
+  const timestamp = new Date();
+  transactionSheet.appendRow([timestamp, "วิเคราะห์ไฟล์", fileUrl, "example"]);
+  
+  return {
+    config: config,
+    extractedText: extractedText,
+    prompt: prompt,
+    aiResponse: aiResponse
+  };
 }

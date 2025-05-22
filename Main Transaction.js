@@ -1,8 +1,3 @@
-//ตัวแปรส่วนกลางสำหรับเก็บ SHEET_ID
-const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID') || 'your_spreadsheet_id_here';
-
-// ตัวแปรส่วนกลางสำหรับเก็บเดือนย่อ
-const monthsThai = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
 function formatNumberWithIntl(number, locale, options) 
 { 
@@ -26,7 +21,7 @@ function recordMonthlyBalance(sheet, dailyReportSheet) {
    const category = "ยอดคงเหลือรายเดือน"; // หมวดหมู่ข้อมูล
    const detail = "บันทึกยอดคงเหลือ ณ สิ้นเดือน"; // รายละเอียดข้อมูล
    
-   const formattedDate = today.getDate() + " " + monthsThai[today.getMonth()] + " " + today.getFullYear();
+  const formattedDate = today.getDate() + " " + CONFIG.MONTHS_THAI[today.getMonth()] + " " + today.getFullYear();
 
 sheet.appendRow([ 
    formattedDate,  // วันที่
@@ -45,8 +40,8 @@ sheet.appendRow([
 */
 
 function doPost(e) { 
-   const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Bot Transactions"); 
-   const dailyReportSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Daily report");
+   const sheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEETS.TRANSACTIONS); 
+   const dailyReportSheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEETS.DAILY_REPORT);
    const data = JSON.parse(e.postData.contents); 
    const intent = data.queryResult.intent.displayName; 
    const params = data.queryResult.parameters; 

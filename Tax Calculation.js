@@ -69,13 +69,11 @@ function getMessage(lang, key, ...args) {
   return Utilities.formatString(messages[key], ...args);
 }
 
-// ฟังก์ชันย่อย: ตรวจสอบการกำหนดค่า
-function validateConfig() {
-  if (!CONFIG.SHEET_ID || CONFIG.SHEET_ID === 'your_spreadsheet_id_here') {
-    throw new Error(getMessage('th', 'CONFIG_ERROR', 'SHEET_ID'));
-  }
+// อัพเดทใหม่! ลบการประกาศ CONFIG ที่ซ้ำซ้อน และใช้ CONFIG จากไฟล์กลาง
+function calculateTax() {
+  const sheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEETS.TRANSACTIONS);
+  const taxLogSheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEETS.TAX_LOGS);
 }
-
 // ฟังก์ชันย่อย: ตรวจสอบพารามิเตอร์
 function validateParameters(params) {
   const errors = [];
@@ -124,9 +122,9 @@ function validateParameters(params) {
 
 // ฟังก์ชันย่อย: ดึงข้อมูลจาก sheet
 function getSheetData(spreadsheet, year) {
-  const sheet = spreadsheet.getSheetByName(CONFIG.SHEET_NAME);
+  const sheet = spreadsheet.getSheetByName(CONFIG.SHEETS_TRANSACTIONS);
   if (!sheet || sheet.getLastRow() <= 1) {
-    throw new Error(getMessage('th', 'NO_DATA', CONFIG.SHEET_NAME, year));
+    throw new Error(getMessage('th', 'NO_DATA', CONFIG.SHEETS_TRANSACTIONS, year));
   }
 
   const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, Math.max(...Object.values(CONFIG.COLUMNS)) + 1).getValues();
