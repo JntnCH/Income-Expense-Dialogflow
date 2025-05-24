@@ -1,5 +1,5 @@
 //ตัวแปรส่วนกลางสำหรับเก็บ SHEET_ID
-const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID') || 'your_spreadsheet_id_here';
+const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
 
 // ตัวแปรส่วนกลางสำหรับเก็บเดือนย่อ
 const monthsThai = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
@@ -37,13 +37,11 @@ sheet.appendRow([
    "System"        // แหล่งที่มา 
    ]); 
 }
-
 /*
 ฟังก์ชันหลักที่ใช้รับข้อมูลจาก Dialogflow และบันทึกลง Google Sheets
 @param {object} e - ข้อมูลที่ได้รับจาก Dialogflow
 @returns {TextOutput} คำตอบที่ส่งกลับไปยัง Dialogflow 
 */
-
 function doPost(e) { 
    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Bot Transactions"); 
    const dailyReportSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Daily report");
