@@ -122,7 +122,7 @@ function validateParameters(params) {
 
 // ฟังก์ชันย่อย: ดึงข้อมูลจาก sheet
 function getSheetData(spreadsheet, year) {
-  const sheet = spreadsheet.getSheetByName(CONFIG.SHEETS_TRANSACTIONS);
+  const sheet = spreadsheet.getSheetByName(CONFIG.SHEETS.TRANSACTIONS);
   if (!sheet || sheet.getLastRow() <= 1) {
     throw new Error(getMessage('th', 'NO_DATA', CONFIG.SHEETS_TRANSACTIONS, year));
   }
