@@ -1,4 +1,3 @@
-
 function formatNumberWithIntl(number, locale, options) 
 { 
    try { 

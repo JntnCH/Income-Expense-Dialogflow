@@ -6,7 +6,6 @@
  */
 
 // ฟังก์ชันสำหรับตั้งค่า SHEET_ID
-
 function setSheetId() {
   PropertiesService.getScriptProperties().setProperty('SHEET_ID', 'YOUR_SHEET_ID_HERE');
   return "✅ ตั้งค่า SHEET_ID เรียบร้อย";
