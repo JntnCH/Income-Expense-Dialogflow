@@ -23,7 +23,7 @@ function setupAPIKeys() {
   // แทนที่ด้วย API Keys ของคุณ
   scriptProperties.setProperty("OPENAI_API_KEY", "sk-xxxxxxxxxxxxxxxxxxxxxxxx");
   scriptProperties.setProperty("ANTHROPIC_API_KEY", "sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx");
-  scriptProperties.setProperty("GEMINI_API_KEY", "AIzaSyCuDEdFYSkmvd3qIXyclfdagHUSn-HEEkU");
+  scriptProperties.setProperty("GEMINI_API_KEY", "YOUR_TOKEN");
   scriptProperties.setProperty("MISTRAL_API_KEY", "xxxxxxxxxxxxxxxxxxxxxxxx");
   scriptProperties.setProperty("VISION_API_KEY", "AIzaxxxxxxxxxxxxxxxxxxxxxxxx");
   
