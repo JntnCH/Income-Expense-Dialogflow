@@ -2,7 +2,6 @@
 
 // การกำหนดค่า
 const CONFIG = {
-  SHEET_NAME: 'Bot Transactions',
   LOG_SHEET_NAME: 'TaxLogs',
   COLUMNS: {
     DATE: 0,
@@ -71,8 +70,8 @@ function getMessage(lang, key, ...args) {
 
 // อัพเดทใหม่! ลบการประกาศ CONFIG ที่ซ้ำซ้อน และใช้ CONFIG จากไฟล์กลาง
 function calculateTax() {
-  const sheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEETS.TRANSACTIONS);
-  const taxLogSheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEETS.TAX_LOGS);
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(BOT_TRANSACTIONS_SHEET);
+  const taxLogSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(CONFIG.SHEETS.TAX_LOGS);
 }
 // ฟังก์ชันย่อย: ตรวจสอบพารามิเตอร์
 function validateParameters(params) {

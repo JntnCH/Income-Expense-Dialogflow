@@ -1,4 +1,3 @@
-// Config.gs
 function setSheetConfig() {
   const scriptProperties = PropertiesService.getScriptProperties();
   const properties = {
@@ -12,7 +11,6 @@ function setSheetConfig() {
   Logger.log('Configuration saved successfully!');
 }
 
-// MainScript.gs
 function processAllSheets() {
   const scriptProperties = PropertiesService.getScriptProperties();
   const sheetId = scriptProperties.getProperty('SHEET_ID');
