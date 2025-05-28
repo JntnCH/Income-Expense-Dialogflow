@@ -86,7 +86,7 @@ if (type === "expense") {
      const monthlyExpense = formatNumberWithIntl(Number(dailyReportValues[4][0]), 'th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0;
      const balance = formatNumberWithIntl(Number(dailyReportValues[6][0]), 'th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0;
      */
-     //Tese 
+     //Tese check balance
      const dailyReportValues = dailyReportSheet.getRange("C4:C10").getValues();
      const formatOptions = {minimumFractionDigits:2,maximumFractionDigits:2};
      
