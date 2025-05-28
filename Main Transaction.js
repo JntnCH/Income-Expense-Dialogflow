@@ -96,7 +96,7 @@ if (type === "expense") {
        const num = Number(Value);
        return isNaN(num) ? 0 : formater.format(num);
        
-       const [dailyIncome,dialyExpense,monthlyIncome,monthlyExpense,,balance]=
+       const [dailyIncome,dailyExpense,monthlyIncome,monthlyExpense,,balance]=
        dailyReportValues.map(row => formatValue(row[0]));
      }
 
