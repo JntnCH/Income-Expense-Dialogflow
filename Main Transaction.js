@@ -39,8 +39,8 @@ sheet.appendRow([
 */
 
 function doPost(e) { 
-   const sheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEETS.TRANSACTIONS); 
-   const dailyReportSheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEETS.DAILY_REPORT);
+   const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(BOT_TRANSACTIONS_SHEET); 
+   const dailyReportSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(DAILY_REPORT_SHEET);
    const data = JSON.parse(e.postData.contents); 
    const intent = data.queryResult.intent.displayName; 
    const params = data.queryResult.parameters; 
@@ -78,12 +78,27 @@ if (type === "expense") {
 
 } else if (intent === "เช็คยอด") { 
    try { 
+     /*
      const dailyReportValues = dailyReportSheet.getRange("C4:C10").getValues();
      const dailyIncome = formatNumberWithIntl(Number(dailyReportValues[0][0]), 'th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0;
      const dailyExpense = formatNumberWithIntl(Number(dailyReportValues[1][0]), 'th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0;
      const monthlyIncome = formatNumberWithIntl(Number(dailyReportValues[3][0]), 'th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0;
      const monthlyExpense = formatNumberWithIntl(Number(dailyReportValues[4][0]), 'th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0;
      const balance = formatNumberWithIntl(Number(dailyReportValues[6][0]), 'th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0;
+     */
+     //Tese check balance
+     const dailyReportValues = dailyReportSheet.getRange("C4:C10").getValues();
+     const formatOptions = {minimumFractionDigits:2,maximumFractionDigits:2};
+     
+     //สร้าง formater ครั้งเดียว
+     const formater = new Intl.NumberFormat('th-TH',formatOptions);
+     const formatValue = (Value) => {
+       const num = Number(Value);
+       return isNaN(num) ? 0 : formater.format(num);
+       
+       const [dailyIncome,dialyExpense,monthlyIncome,monthlyExpense,,balance]=
+       dailyReportValues.map(row => formatValue(row[0]));
+     }
 
      const today = new Date();
      const todayFormatted = Utilities.formatDate(today, "Asia/Bangkok", "dd MMM yyyy");
