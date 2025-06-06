@@ -1,14 +1,23 @@
+// Config.js
 function setSheetConfig() {
   const scriptProperties = PropertiesService.getScriptProperties();
   const properties = {
-    'SHEET_ID': 'YOUR_SHEET_ID_HERE', // แทนที่ด้วย Sheet ID ของคุณ
+    'SHEET_ID': 'YOUR_SHEET_ID_HERE', // แทนที่ด้วย Sheet ID จริง
     'BOT_TRANSACTIONS_SHEET': 'Bot Transactions',
     'DAILY_REPORT_SHEET': 'Daily Report',
     'SUMMARY_SHEET': 'Summary of All',
-    'BUDGET_SHEET': 'Budget'
+    'BUDGET_SHEET': 'Budget',
+    'LOG_SHEET_NAME': 'TaxLogs'
   };
-  scriptProperties.setProperties(properties);
-  Logger.log('Configuration saved successfully!');
+  // เพิ่ม CONFIG.MONTHS_THAI
+  const CONFIG = {
+    MONTHS_THAI: [
+      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+      "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    ]
+  };
+  scriptProperties.setProperties(properties); // บันทึกคุณสมบัติ
+  return { ...properties, CONFIG }; // ส่งคืนทั้ง properties และ CONFIG
 }
 
 function processAllSheets() {

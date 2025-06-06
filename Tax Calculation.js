@@ -1,8 +1,10 @@
 // Tax Calculation.gs
 
 // การกำหนดค่า
+const scriptProperties = PropertiesService.getScriptProperties();
+const LOG_SHEET_NAME = scriptProperties.getProperty('LOG_SHEET_NAME') || 'TaxLogs'; // ใช้ค่า default ถ้าไม่พบ
 const CONFIG = {
-  LOG_SHEET_NAME: 'TaxLogs',
+  LOG_SHEET_NAME: LOG_SHEET_NAME,
   COLUMNS: {
     DATE: 0,
     TYPE: 1,
